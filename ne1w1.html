@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Camera App</title>
+  <style>
+    body {
+      background-color: #f4f4f4;
+      text-align: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    #app-header {
+      background-color: #077820;
+      color: white;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    #app-header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    #video {
+      border: 2px solid black;
+      max-width: 100%;
+      margin-bottom: 20px;
+    }
+    #canvas {
+      display: none;
+    }
+    #photo {
+      border: 2px solid black;
+      max-width: 100%;
+      display: none;
+      margin-bottom: 20px;
+    }
+    .question-label {
+      position: relative; /* Set the position to relative for proper alignment */
+      display: inline-block;
+      width: 200px; /* Width of the question label */
+      height: 60px; /* Height of the question label */
+      padding: 10px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      text-align: left;
+      font-weight: bold;
+      font-size: 16px;
+    }
+    .question-label .camera-icon {
+      color: blue;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+    .scan-counter {
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    .empty-page-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px; /* Position the empty page icon on the right side */
+      width: 50px; /* Width of the empty page icon */
+      height: 60px; /* Height of the empty page icon */
+      color: #ccc;
+    }
+    .scan-thumbnail {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 30px;
+      height: 30px;
+      border: 2px solid #ccc;
+    }
+    #total-scans {
+      font-size: 18px;
+      margin-top: 20px;
+    }
+  </style>
+  <!-- Include Font Awesome icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <!-- ... (Rest of the HTML code remains unchanged) ... -->
+
+<div id="app-header">
+  <h1>E-Test Scans</h1>
+</div>
+<!-- Ten question labels with camera icon -->
+<div class="question-label" data-scancount="0">
+  Question 1 <i class="fas fa-camera camera-icon" onclick="openCamera(1)"></i>
+  <span class="scan-counter">No scans yet</span>
+  <i class="far fa-file-alt empty-page-icon"></i>
+</div>
+<div class="question-label" data-scancount="0">
+  Question 2 <i class="fas fa-camera camera-icon" onclick="openCamera(2)"></i>
+  <span class="scan-counter">No scans yet</span>
+  <i class="far fa-file-alt empty-page-icon"></i>
+</div>
+<!-- Add more question labels up to Question 10 -->
+
+<div id="total-scans">Total Scans: 0</div>
+
+<video id="video" autoplay></video>
+<canvas id="canvas"></canvas>
+<img id="photo" alt="Captured Photo" />
+
+<!-- Save button for capturing and saving the photo -->
+<button id="save-button" onclick="savePhoto()">Save</button>
+
+<script>
+  // Your JavaScript code remains unchanged from the previous example.
+  // ...
+
+  let mediaStream = null; // To store the media stream from the camera
+
+  // Function to open the camera for a specific question
+  function openCamera(questionNumber) {
+    const questionLabel = document.querySelector(`[data-scancount="${questionNumber}"]`);
+    const videoElement = document.getElementById('video');
+    const saveButton = document.getElementById('save-button');
+    const photoElement = document.getElementById('photo');
+
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then((stream) => {
+        mediaStream = stream;
+        videoElement.srcObject = stream;
+        videoElement.play();
+        questionLabel.style.display = 'none'; // Hide the question label while using the camera
+        saveButton.style.display = 'block'; // Show the "Save" button
+        photoElement.style.display = 'none'; // Hide the captured photo if any
+      })
+      .catch((error) => {
+        console.error('Error accessing the camera: ', error);
+      });
+  }
+
+  // Function to capture and display the photo
+  function savePhoto() {
+    const videoElement = document.getElementById('video');
+    const canvasElement = document.getElementById('canvas');
+    const photoElement = document.getElementById('photo');
+    const context = canvasElement.getContext('2d');
+
+    // Set the canvas dimensions to match the video dimensions
+    canvasElement.width = videoElement.videoWidth;
+    canvasElement.height = videoElement.videoHeight;
+
+    // Draw the current video frame onto the canvas
+    context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+    // Stop the camera stream
+    mediaStream.getTracks().forEach((track) => track.stop());
+
+    // Show the captured photo and hide the video element
+    photoElement.src = canvasElement.toDataURL('image/png');
+    videoElement.style.display = 'none';
+    photoElement.style.display = 'inline-block';
+
+    // Show the question label again
+    const saveButton = document.getElementById('save-button');
+    saveButton.style.display = 'none'; // Hide the "Save" button
+    const questionLabels = document.querySelectorAll('.question-label');
+    questionLabels.forEach((label) => {
+      label.style.display = 'inline-block';
+    });
+  }
+</script>
+</body>
+</html>
+
